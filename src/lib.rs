@@ -1,3 +1,4 @@
+mod descriptive;
 use pgrx::prelude::*;
 
 ::pgrx::pg_module_magic!(name, version);
@@ -9,12 +10,7 @@ fn statkit_version() -> &'static str {
 
 #[pg_extern]
 fn statkit_mean(values: Vec<f64>) -> Option<f64> {
-    if values.is_empty() {
-        return None;
-    }
-
-    let sum: f64 = values.iter().sum();
-    Some(sum / values.len() as f64)
+    descriptive::mean(&values)
 }
 
 #[cfg(any(test, feature = "pg_test"))]
