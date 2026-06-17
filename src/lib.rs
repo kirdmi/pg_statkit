@@ -13,6 +13,11 @@ fn statkit_mean(values: Vec<f64>) -> Option<f64> {
     descriptive::mean(&values)
 }
 
+#[pg_extern]
+fn statkit_sum(values: Vec<f64>) -> Option<f64> {
+    descriptive::sum(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -31,6 +36,16 @@ mod tests {
     #[pg_test]
     fn test_statkit_mean_empty() {
         assert_eq!(crate::statkit_mean(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_sum() {
+        assert_eq!(crate::statkit_sum(vec![1.0, 2.0, 3.0]), Some(6.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_sum_empty() {
+        assert_eq!(crate::statkit_sum(vec![]), None);
     }
 }
 
