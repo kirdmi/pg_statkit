@@ -1,4 +1,4 @@
-use core::option::Option::None;
+use core::option::Option::{self, None};
 
 pub fn mean(values: &[f64]) -> Option<f64> {
     if values.is_empty() {
@@ -50,6 +50,17 @@ pub fn max(values: &[f64]) -> Option<f64> {
     Some(current_max)
 }
 
+pub fn range(values: &[f64]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let maximum = max(values)?;
+    let minimum = min(values)?;
+
+    Some(maximum - minimum)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,5 +103,15 @@ mod tests {
     #[test]
     fn max_returns_maximum() {
         assert_eq!(max(&[3.0, 1.0, 2.0]), Some(3.0));
+    }
+
+    #[test]
+    fn range_returns_none_for_empty_input() {
+        assert_eq!(range(&[]), None);
+    }
+
+    #[test]
+    fn range_returns_range() {
+        assert_eq!(range(&[3.0, 1.0, 2.0]), Some(2.0));
     }
 }

@@ -28,6 +28,11 @@ fn statkit_max(values: Vec<f64>) -> Option<f64> {
     descriptive::max(&values)
 }
 
+#[pg_extern]
+fn statkit_range(values: Vec<f64>) -> Option<f64> {
+    descriptive::range(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -76,6 +81,16 @@ mod tests {
     #[pg_test]
     fn test_statkit_max_empty() {
         assert_eq!(crate::statkit_max(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_range() {
+        assert_eq!(crate::statkit_range(vec![1.0, 2.0, 3.0]), Some(2.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_range_empty() {
+        assert_eq!(crate::statkit_range(vec![]), None);
     }
 }
 
