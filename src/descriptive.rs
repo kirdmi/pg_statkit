@@ -1,3 +1,5 @@
+use core::option::Option::None;
+
 pub fn mean(values: &[f64]) -> Option<f64> {
     if values.is_empty() {
         return None;
@@ -14,6 +16,38 @@ pub fn sum(values: &[f64]) -> Option<f64> {
 
     let sum: f64 = values.iter().sum();
     Some(sum)
+}
+
+pub fn min(values: &[f64]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let mut current_min = values[0];
+
+    for value in values.iter().skip(1) {
+        if *value < current_min {
+            current_min = *value;
+        }
+    }
+
+    Some(current_min)
+}
+
+pub fn max(values: &[f64]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let mut current_max = values[0];
+
+    for value in values.iter().skip(1) {
+        if *value > current_max {
+            current_max = *value;
+        }
+    }
+
+    Some(current_max)
 }
 
 #[cfg(test)]
@@ -38,5 +72,25 @@ mod tests {
     #[test]
     fn sum_returns_sum() {
         assert_eq!(sum(&[1.0, 2.0, 3.0]), Some(6.0));
+    }
+
+    #[test]
+    fn min_returns_none_for_empty_input() {
+        assert_eq!(min(&[]), None);
+    }
+
+    #[test]
+    fn min_returns_minimum() {
+        assert_eq!(min(&[3.0, 1.0, 2.0]), Some(1.0));
+    }
+
+    #[test]
+    fn max_returns_none_for_empty_input() {
+        assert_eq!(max(&[]), None);
+    }
+
+    #[test]
+    fn max_returns_maximum() {
+        assert_eq!(max(&[3.0, 1.0, 2.0]), Some(3.0));
     }
 }
