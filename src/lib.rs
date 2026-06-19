@@ -33,6 +33,11 @@ fn statkit_range(values: Vec<f64>) -> Option<f64> {
     descriptive::range(&values)
 }
 
+#[pg_extern]
+fn statkit_median(values: Vec<f64>) -> Option<f64> {
+    descriptive::median(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -91,6 +96,21 @@ mod tests {
     #[pg_test]
     fn test_statkit_range_empty() {
         assert_eq!(crate::statkit_range(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_median_odd() {
+        assert_eq!(crate::statkit_median(vec![1.0, 2.0, 3.0]), Some(2.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_median_even() {
+        assert_eq!(crate::statkit_median(vec![1.0, 2.0, 3.0, 4.0]), Some(2.5));
+    }
+
+    #[pg_test]
+    fn test_statkit_median_empty() {
+        assert_eq!(crate::statkit_median(vec![]), None);
     }
 }
 

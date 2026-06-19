@@ -61,6 +61,31 @@ pub fn range(values: &[f64]) -> Option<f64> {
     Some(maximum - minimum)
 }
 
+pub fn median(values: &[f64]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let mut sorted = values.to_vec();
+
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let n = sorted.len();
+
+    let mid = n / 2;
+
+    let median = if n % 2 == 0 {
+        let left = sorted[mid - 1];
+        let right = sorted[mid];
+
+        (left + right) / 2.0
+    } else {
+        sorted[mid]
+    };
+
+    Some(median)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,5 +138,20 @@ mod tests {
     #[test]
     fn range_returns_range() {
         assert_eq!(range(&[3.0, 1.0, 2.0]), Some(2.0));
+    }
+
+    #[test]
+    fn median_returns_none_for_empty_input() {
+        assert_eq!(median(&[]), None);
+    }
+
+    #[test]
+    fn median_returns_median_odd() {
+        assert_eq!(median(&[3.0, 1.0, 2.0]), Some(2.0));
+    }
+
+    #[test]
+    fn median_returns_median_even() {
+        assert_eq!(median(&[3.0, 1.0, 2.0, 4.0]), Some(2.5));
     }
 }
