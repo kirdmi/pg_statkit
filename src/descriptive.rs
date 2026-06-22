@@ -1,4 +1,7 @@
-use core::option::Option::{self, None};
+use core::{
+    //    arch::aarch64::vabd_f64,
+    option::Option::{self, None},
+};
 
 pub fn mean(values: &[f64]) -> Option<f64> {
     if values.is_empty() {
@@ -86,6 +89,25 @@ pub fn median(values: &[f64]) -> Option<f64> {
     Some(median)
 }
 
+pub fn variance_population(values: &[f64]) -> Option<f64> {
+    if values.is_empty() {
+        return None;
+    }
+
+    let len: f64 = values.len() as f64;
+
+    let mean_value = mean(values)?;
+
+    let mut sum_squared_deviations: f64 = 0.0;
+
+    for &value in values.iter() {
+        let deviation: f64 = value - mean_value;
+        sum_squared_deviations += deviation * deviation;
+    }
+
+    Some(sum_squared_deviations / len)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -153,5 +175,25 @@ mod tests {
     #[test]
     fn median_returns_median_even() {
         assert_eq!(median(&[3.0, 1.0, 2.0, 4.0]), Some(2.5));
+    }
+
+    #[test]
+    fn variance_population_returns_none_for_empty_input() {
+        assert_eq!(variance_population(&[]), None);
+    }
+
+    #[test]
+    fn variance_population_returns_zero_for_one_input() {
+        assert_eq!(variance_population(&[5.0]), Some(0.0));
+    }
+
+    #[test]
+    fn variance_population_returns_variance_for_list_of_defferent_elements() {
+        assert_eq!(variance_population(&[1.0, 2.0, 3.0, 4.0]), Some(1.25));
+    }
+
+    #[test]
+    fn variance_population_returns_variance_for_list_of_same_elements() {
+        assert_eq!(variance_population(&[10.0, 10.0, 10.0]), Some(0.0));
     }
 }
