@@ -1,8 +1,3 @@
-use core::{
-    //    arch::aarch64::vabd_f64,
-    option::Option::{self, None},
-};
-
 pub fn mean(values: &[f64]) -> Option<f64> {
     if values.is_empty() {
         return None;
@@ -89,12 +84,10 @@ pub fn median(values: &[f64]) -> Option<f64> {
     Some(median)
 }
 
-pub fn variance_population(values: &[f64]) -> Option<f64> {
+fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
     if values.is_empty() {
         return None;
     }
-
-    let len: f64 = values.len() as f64;
 
     let mean_value = mean(values)?;
 
@@ -105,7 +98,26 @@ pub fn variance_population(values: &[f64]) -> Option<f64> {
         sum_squared_deviations += deviation * deviation;
     }
 
-    Some(sum_squared_deviations / len)
+    Some(sum_squared_deviations)
+}
+
+pub fn variance_population(values: &[f64]) -> Option<f64> {
+    let len: f64 = values.len() as f64;
+    let ssd = sum_squared_deviations(values)?;
+
+    Some(ssd / len)
+}
+
+pub fn variance_sample(values: &[f64]) -> Option<f64> {
+    if values.len() < 2 {
+        return None;
+    }
+
+    let len: f64 = values.len() as f64;
+
+    let ssd = sum_squared_deviations(values)?;
+
+    Some(ssd / (len - 1.0))
 }
 
 #[cfg(test)]
@@ -188,12 +200,32 @@ mod tests {
     }
 
     #[test]
-    fn variance_population_returns_variance_for_list_of_defferent_elements() {
+    fn variance_population_returns_variance_for_list_of_different_elements() {
         assert_eq!(variance_population(&[1.0, 2.0, 3.0, 4.0]), Some(1.25));
     }
 
     #[test]
     fn variance_population_returns_variance_for_list_of_same_elements() {
         assert_eq!(variance_population(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn variance_sample_returns_none_for_empty_input() {
+        assert_eq!(variance_sample(&[]), None);
+    }
+
+    #[test]
+    fn variance_sample_returns_none_for_one_input() {
+        assert_eq!(variance_sample(&[5.0]), None);
+    }
+
+    #[test]
+    fn variance_sample_returns_variance_for_list_of_different_elements() {
+        assert_eq!(variance_sample(&[1.0, 2.0, 3.0, 4.0, 5.0]), Some(2.5));
+    }
+
+    #[test]
+    fn variance_sample_returns_variance_for_list_of_same_elements() {
+        assert_eq!(variance_sample(&[10.0, 10.0, 10.0]), Some(0.0));
     }
 }

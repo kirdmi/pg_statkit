@@ -43,6 +43,11 @@ fn statkit_variance_population(values: Vec<f64>) -> Option<f64> {
     descriptive::variance_population(&values)
 }
 
+#[pg_extern]
+fn statkit_variance_sample(values: Vec<f64>) -> Option<f64> {
+    descriptive::variance_sample(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -140,6 +145,32 @@ mod tests {
     fn test_statkit_variance_population_variance_for_list_of_same_elements() {
         assert_eq!(
             crate::statkit_variance_population(vec![10.0, 10.0, 10.0]),
+            Some(0.0)
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_variance_sample_empty() {
+        assert_eq!(crate::statkit_variance_sample(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_variance_sample_zero_for_one_input() {
+        assert_eq!(crate::statkit_variance_sample(vec![5.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_variance_sample_variance_for_list_of_defferent_elements() {
+        assert_eq!(
+            crate::statkit_variance_sample(vec![1.0, 2.0, 3.0, 4.0, 5.0]),
+            Some(2.5)
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_variance_sample_variance_for_list_of_same_elements() {
+        assert_eq!(
+            crate::statkit_variance_sample(vec![10.0, 10.0, 10.0]),
             Some(0.0)
         );
     }
