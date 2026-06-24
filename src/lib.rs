@@ -48,6 +48,16 @@ fn statkit_variance_sample(values: Vec<f64>) -> Option<f64> {
     descriptive::variance_sample(&values)
 }
 
+#[pg_extern]
+fn statkit_stddev_population(values: Vec<f64>) -> Option<f64> {
+    descriptive::stddev_population(&values)
+}
+
+#[pg_extern]
+fn statkit_stddev_sample(values: Vec<f64>) -> Option<f64> {
+    descriptive::stddev_sample(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -172,6 +182,54 @@ mod tests {
         assert_eq!(
             crate::statkit_variance_sample(vec![10.0, 10.0, 10.0]),
             Some(0.0)
+        );
+    }
+
+    #[test]
+    fn test_statkit_stddev_population_returns_none_for_empty_input() {
+        assert_eq!(statkit_stddev_population(vec![]), None);
+    }
+
+    #[test]
+    fn test_statkit_stddev_population_returns_zero_for_one_input() {
+        assert_eq!(statkit_stddev_population(vec![5.0]), Some(0.0));
+    }
+
+    #[test]
+    fn test_statkit_stddev_population_returns_zero_for_same_elements() {
+        assert_eq!(statkit_stddev_population(vec![10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn test_statkit_stddev_population_returns_stddev_for_different_elements() {
+        assert_eq!(
+            statkit_stddev_population(vec![1.0, 1.0, 3.0, 3.0]),
+            Some(1.0)
+        );
+    }
+
+    #[test]
+    fn test_statkit_stddev_sample_returns_none_for_empty_input() {
+        assert_eq!(statkit_stddev_sample(vec![]), None);
+    }
+
+    #[test]
+    fn test_statkit_stddev_sample_returns_none_for_one_input() {
+        assert_eq!(statkit_stddev_sample(vec![5.0]), None);
+    }
+
+    #[test]
+    fn test_statkit_stddev_sample_returns_zero_for_same_elements() {
+        assert_eq!(statkit_stddev_sample(vec![10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn test_statkit_stddev_sample_returns_stddev_for_different_elements() {
+        let expected = (4.0_f64 / 3.0).sqrt();
+
+        assert_eq!(
+            statkit_stddev_sample(vec![1.0, 1.0, 3.0, 3.0]),
+            Some(expected)
         );
     }
 }

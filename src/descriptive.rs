@@ -120,6 +120,18 @@ pub fn variance_sample(values: &[f64]) -> Option<f64> {
     Some(ssd / (len - 1.0))
 }
 
+pub fn stddev_population(values: &[f64]) -> Option<f64> {
+    let variance = variance_population(values)?;
+
+    Some(variance.sqrt())
+}
+
+pub fn stddev_sample(values: &[f64]) -> Option<f64> {
+    let variance = variance_sample(values)?;
+
+    Some(variance.sqrt())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -227,5 +239,47 @@ mod tests {
     #[test]
     fn variance_sample_returns_variance_for_list_of_same_elements() {
         assert_eq!(variance_sample(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn stddev_population_returns_none_for_empty_input() {
+        assert_eq!(stddev_population(&[]), None);
+    }
+
+    #[test]
+    fn stddev_population_returns_zero_for_one_input() {
+        assert_eq!(stddev_population(&[5.0]), Some(0.0));
+    }
+
+    #[test]
+    fn stddev_population_returns_zero_for_same_elements() {
+        assert_eq!(stddev_population(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn stddev_population_returns_stddev_for_different_elements() {
+        assert_eq!(stddev_population(&[1.0, 1.0, 3.0, 3.0]), Some(1.0));
+    }
+
+    #[test]
+    fn stddev_sample_returns_none_for_empty_input() {
+        assert_eq!(stddev_sample(&[]), None);
+    }
+
+    #[test]
+    fn stddev_sample_returns_none_for_one_input() {
+        assert_eq!(stddev_sample(&[5.0]), None);
+    }
+
+    #[test]
+    fn stddev_sample_returns_zero_for_same_elements() {
+        assert_eq!(stddev_sample(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn stddev_sample_returns_stddev_for_different_elements() {
+        let expected = (4.0_f64 / 3.0).sqrt();
+
+        assert_eq!(stddev_sample(&[1.0, 1.0, 3.0, 3.0]), Some(expected));
     }
 }
