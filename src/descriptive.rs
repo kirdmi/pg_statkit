@@ -136,6 +136,19 @@ pub fn stddev_sample(values: &[f64]) -> Option<f64> {
 mod tests {
     use super::*;
 
+    fn assert_option_float_close(actual: Option<f64>, expected: f64) {
+        let epsilon = 1e-10;
+        let actual = actual.expect("expected Some(f64), got None");
+
+        assert!(
+            (actual - expected).abs() < epsilon,
+            "actual: {}, expected: {}, diff: {}",
+            actual,
+            expected,
+            (actual - expected).abs()
+        );
+    }
+
     #[test]
     fn mean_returns_none_for_empty_input() {
         assert_eq!(mean(&[]), None);
@@ -280,6 +293,11 @@ mod tests {
     fn stddev_sample_returns_stddev_for_different_elements() {
         let expected = (4.0_f64 / 3.0).sqrt();
 
-        assert_eq!(stddev_sample(&[1.0, 1.0, 3.0, 3.0]), Some(expected));
+        assert_option_float_close(stddev_sample(&[1.0, 1.0, 3.0, 3.0]), expected);
+    }
+
+    #[test]
+    fn variance_population_returns_fractional_variance() {
+        assert_option_float_close(variance_population(&[1.0, 2.0, 3.0]), 2.0 / 3.0);
     }
 }
