@@ -144,7 +144,7 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_statkit_variance_population_variance_for_list_of_defferent_elements() {
+    fn test_statkit_variance_population_variance_for_list_of_different_elements() {
         assert_eq!(
             crate::statkit_variance_population(vec![1.0, 2.0, 3.0, 4.0]),
             Some(1.25)
@@ -170,7 +170,7 @@ mod tests {
     }
 
     #[pg_test]
-    fn test_statkit_variance_sample_variance_for_list_of_defferent_elements() {
+    fn test_statkit_variance_sample_variance_for_list_of_different_elements() {
         assert_eq!(
             crate::statkit_variance_sample(vec![1.0, 2.0, 3.0, 4.0, 5.0]),
             Some(2.5)
@@ -185,50 +185,56 @@ mod tests {
         );
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_population_returns_none_for_empty_input() {
-        assert_eq!(statkit_stddev_population(vec![]), None);
+        assert_eq!(crate::statkit_stddev_population(vec![]), None);
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_population_returns_zero_for_one_input() {
-        assert_eq!(statkit_stddev_population(vec![5.0]), Some(0.0));
+        assert_eq!(crate::statkit_stddev_population(vec![5.0]), Some(0.0));
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_population_returns_zero_for_same_elements() {
-        assert_eq!(statkit_stddev_population(vec![10.0, 10.0, 10.0]), Some(0.0));
+        assert_eq!(
+            crate::statkit_stddev_population(vec![10.0, 10.0, 10.0]),
+            Some(0.0)
+        );
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_population_returns_stddev_for_different_elements() {
         assert_eq!(
-            statkit_stddev_population(vec![1.0, 1.0, 3.0, 3.0]),
+            crate::statkit_stddev_population(vec![1.0, 1.0, 3.0, 3.0]),
             Some(1.0)
         );
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_sample_returns_none_for_empty_input() {
-        assert_eq!(statkit_stddev_sample(vec![]), None);
+        assert_eq!(crate::statkit_stddev_sample(vec![]), None);
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_sample_returns_none_for_one_input() {
-        assert_eq!(statkit_stddev_sample(vec![5.0]), None);
+        assert_eq!(crate::statkit_stddev_sample(vec![5.0]), None);
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_sample_returns_zero_for_same_elements() {
-        assert_eq!(statkit_stddev_sample(vec![10.0, 10.0, 10.0]), Some(0.0));
+        assert_eq!(
+            crate::statkit_stddev_sample(vec![10.0, 10.0, 10.0]),
+            Some(0.0)
+        );
     }
 
-    #[test]
+    #[pg_test]
     fn test_statkit_stddev_sample_returns_stddev_for_different_elements() {
         let expected = (4.0_f64 / 3.0).sqrt();
 
         assert_eq!(
-            statkit_stddev_sample(vec![1.0, 1.0, 3.0, 3.0]),
+            crate::statkit_stddev_sample(vec![1.0, 1.0, 3.0, 3.0]),
             Some(expected)
         );
     }
