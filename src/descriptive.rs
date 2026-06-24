@@ -1,5 +1,5 @@
 pub fn mean(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -8,7 +8,7 @@ pub fn mean(values: &[f64]) -> Option<f64> {
 }
 
 pub fn sum(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -17,7 +17,7 @@ pub fn sum(values: &[f64]) -> Option<f64> {
 }
 
 pub fn min(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -33,7 +33,7 @@ pub fn min(values: &[f64]) -> Option<f64> {
 }
 
 pub fn max(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -49,7 +49,7 @@ pub fn max(values: &[f64]) -> Option<f64> {
 }
 
 pub fn range(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -60,7 +60,7 @@ pub fn range(values: &[f64]) -> Option<f64> {
 }
 
 pub fn median(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -85,7 +85,7 @@ pub fn median(values: &[f64]) -> Option<f64> {
 }
 
 fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
-    if values.is_empty() {
+    if invalid_input(values) {
         return None;
     }
 
@@ -109,7 +109,7 @@ pub fn variance_population(values: &[f64]) -> Option<f64> {
 }
 
 pub fn variance_sample(values: &[f64]) -> Option<f64> {
-    if values.len() < 2 {
+    if invalid_sample_input(values) {
         return None;
     }
 
@@ -130,6 +130,18 @@ pub fn stddev_sample(values: &[f64]) -> Option<f64> {
     let variance = variance_sample(values)?;
 
     Some(variance.sqrt())
+}
+
+fn contains_non_finite(values: &[f64]) -> bool {
+    values.iter().any(|value| !value.is_finite())
+}
+
+fn invalid_input(values: &[f64]) -> bool {
+    values.is_empty() || contains_non_finite(values)
+}
+
+fn invalid_sample_input(values: &[f64]) -> bool {
+    values.len() < 2 || contains_non_finite(values)
 }
 
 #[cfg(test)]
@@ -299,5 +311,70 @@ mod tests {
     #[test]
     fn variance_population_returns_fractional_variance() {
         assert_option_float_close(variance_population(&[1.0, 2.0, 3.0]), 2.0 / 3.0);
+    }
+
+    #[test]
+    fn contains_non_finite_returns_false_for_empty_input() {
+        assert_eq!(contains_non_finite(&[]), false);
+    }
+
+    #[test]
+    fn contains_non_finite_returns_false_for_finite_values() {
+        assert!(!contains_non_finite(&[1.0, 2.0, 3.0]));
+    }
+
+    #[test]
+    fn contains_non_finite_returns_true_for_nan() {
+        assert_eq!(contains_non_finite(&[1.0, f64::NAN, 3.0]), true);
+    }
+
+    #[test]
+    fn contains_non_finite_returns_true_for_infinity() {
+        assert_eq!(contains_non_finite(&[1.0, f64::INFINITY, 3.0]), true);
+    }
+
+    #[test]
+    fn mean_returns_none_for_nan() {
+        assert_eq!(mean(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn median_returns_none_for_nan() {
+        assert_eq!(median(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn variance_population_returns_none_for_infinity() {
+        assert_eq!(variance_population(&[1.0, f64::INFINITY, 3.0]), None);
+    }
+
+    #[test]
+    fn variance_sample_returns_none_for_nan() {
+        assert_eq!(variance_sample(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn invalid_input_returns_true_for_empty_input() {
+        assert!(invalid_input(&[]));
+    }
+
+    #[test]
+    fn invalid_input_returns_true_for_nan() {
+        assert_eq!(invalid_input(&[1.0, f64::NAN]), true);
+    }
+
+    #[test]
+    fn invalid_input_returns_false_for_valid_values() {
+        assert_eq!(invalid_input(&[1.0, 2.0]), false);
+    }
+
+    #[test]
+    fn invalid_sample_input_returns_true_for_one_input() {
+        assert_eq!(invalid_sample_input(&[1.0]), true);
+    }
+
+    #[test]
+    fn invalid_sample_input_returns_false_for_two_valid_values() {
+        assert_eq!(invalid_sample_input(&[1.0, 2.0]), false);
     }
 }
