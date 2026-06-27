@@ -1,3 +1,56 @@
+// helpers
+
+fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
+    if invalid_input(values) {
+        return None;
+    }
+
+    let mean_value = mean(values)?;
+
+    let mut sum_squared_deviations: f64 = 0.0;
+
+    for &value in values.iter() {
+        let deviation: f64 = value - mean_value;
+        sum_squared_deviations += deviation * deviation;
+    }
+
+    Some(sum_squared_deviations)
+}
+
+fn contains_non_finite(values: &[f64]) -> bool {
+    values.iter().any(|value| !value.is_finite())
+}
+
+fn invalid_input(values: &[f64]) -> bool {
+    values.is_empty() || contains_non_finite(values)
+}
+
+fn invalid_sample_input(values: &[f64]) -> bool {
+    values.len() < 2 || contains_non_finite(values)
+}
+
+fn median_of_sorted(sorted: &[f64]) -> Option<f64> {
+    if sorted.is_empty() {
+        return None;
+    }
+
+    let n = sorted.len();
+    let mid = n / 2;
+
+    let median = if n % 2 == 0 {
+        let left = sorted[mid - 1];
+        let right = sorted[mid];
+
+        (left + right) / 2.0
+    } else {
+        sorted[mid]
+    };
+
+    Some(median)
+}
+
+// API
+
 pub fn mean(values: &[f64]) -> Option<f64> {
     if invalid_input(values) {
         return None;
@@ -68,37 +121,7 @@ pub fn median(values: &[f64]) -> Option<f64> {
 
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-    let n = sorted.len();
-
-    let mid = n / 2;
-
-    let median = if n % 2 == 0 {
-        let left = sorted[mid - 1];
-        let right = sorted[mid];
-
-        (left + right) / 2.0
-    } else {
-        sorted[mid]
-    };
-
-    Some(median)
-}
-
-fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
-    if invalid_input(values) {
-        return None;
-    }
-
-    let mean_value = mean(values)?;
-
-    let mut sum_squared_deviations: f64 = 0.0;
-
-    for &value in values.iter() {
-        let deviation: f64 = value - mean_value;
-        sum_squared_deviations += deviation * deviation;
-    }
-
-    Some(sum_squared_deviations)
+    median_of_sorted(&sorted)
 }
 
 pub fn variance_population(values: &[f64]) -> Option<f64> {
@@ -130,38 +153,6 @@ pub fn stddev_sample(values: &[f64]) -> Option<f64> {
     let variance = variance_sample(values)?;
 
     Some(variance.sqrt())
-}
-
-fn contains_non_finite(values: &[f64]) -> bool {
-    values.iter().any(|value| !value.is_finite())
-}
-
-fn invalid_input(values: &[f64]) -> bool {
-    values.is_empty() || contains_non_finite(values)
-}
-
-fn invalid_sample_input(values: &[f64]) -> bool {
-    values.len() < 2 || contains_non_finite(values)
-}
-
-fn median_of_sorted(sorted: &[f64]) -> Option<f64> {
-    if sorted.is_empty() {
-        return None;
-    }
-
-    let n = sorted.len();
-    let mid = n / 2;
-
-    let median = if n % 2 == 0 {
-        let left = sorted[mid - 1];
-        let right = sorted[mid];
-
-        (left + right) / 2.0
-    } else {
-        sorted[mid]
-    };
-
-    Some(median)
 }
 
 pub fn quartiles(values: &[f64]) -> Option<(f64, f64, f64)> {
