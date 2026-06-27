@@ -144,6 +144,54 @@ fn invalid_sample_input(values: &[f64]) -> bool {
     values.len() < 2 || contains_non_finite(values)
 }
 
+fn median_of_sorted(sorted: &[f64]) -> Option<f64> {
+    if sorted.is_empty() {
+        return None;
+    }
+
+    let n = sorted.len();
+    let mid = n / 2;
+
+    let median = if n % 2 == 0 {
+        let left = sorted[mid - 1];
+        let right = sorted[mid];
+
+        (left + right) / 2.0
+    } else {
+        sorted[mid]
+    };
+
+    Some(median)
+}
+
+pub fn quartiles(values: &[f64]) -> Option<(f64, f64, f64)> {
+    if invalid_sample_input(values) {
+        return None;
+    }
+
+    let mut sorted = values.to_vec();
+
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let n = sorted.len();
+
+    let mid = n / 2;
+
+    let (lower, upper) = if n % 2 == 0 {
+        (&sorted[..mid], &sorted[mid..])
+    } else {
+        (&sorted[..mid], &sorted[mid + 1..])
+    };
+
+    let q2 = median_of_sorted(&sorted)?;
+
+    let q1 = median_of_sorted(lower)?;
+
+    let q3 = median_of_sorted(upper)?;
+
+    Some((q1, q2, q3))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -376,5 +424,48 @@ mod tests {
     #[test]
     fn invalid_sample_input_returns_false_for_two_valid_values() {
         assert_eq!(invalid_sample_input(&[1.0, 2.0]), false);
+    }
+
+    #[test]
+    fn quartiles_returns_none_for_empty_input() {
+        assert_eq!(quartiles(&[]), None);
+    }
+
+    #[test]
+    fn quartiles_returns_none_for_one_element_input() {
+        assert_eq!(quartiles(&[5.0]), None);
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_two_element_input() {
+        assert_eq!(quartiles(&[1.0, 2.0]), Some((1.0, 1.5, 2.0)));
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_three_element_input() {
+        assert_eq!(quartiles(&[1.0, 2.0, 3.0]), Some((1.0, 2.0, 3.0)));
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_four_element_input() {
+        assert_eq!(quartiles(&[1.0, 2.0, 3.0, 4.0]), Some((1.5, 2.5, 3.5)));
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_five_element_input() {
+        assert_eq!(quartiles(&[1.0, 2.0, 3.0, 4.0, 5.0]), Some((1.5, 3.0, 4.5)));
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_tens_input() {
+        assert_eq!(
+            quartiles(&[10.0, 10.0, 10.0, 10.0]),
+            Some((10.0, 10.0, 10.0))
+        );
+    }
+
+    #[test]
+    fn quartiles_returns_result_for_three_element_input_with_nan() {
+        assert_eq!(quartiles(&[1.0, f64::NAN, 3.0]), None);
     }
 }

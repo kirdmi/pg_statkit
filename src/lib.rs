@@ -58,6 +58,24 @@ fn statkit_stddev_sample(values: Vec<f64>) -> Option<f64> {
     descriptive::stddev_sample(&values)
 }
 
+#[pg_extern]
+fn statkit_q1(values: Vec<f64>) -> Option<f64> {
+    let (q1, _, _) = descriptive::quartiles(&values)?;
+    Some(q1)
+}
+
+#[pg_extern]
+fn statkit_q2(values: Vec<f64>) -> Option<f64> {
+    let (_, q2, _) = descriptive::quartiles(&values)?;
+    Some(q2)
+}
+
+#[pg_extern]
+fn statkit_q3(values: Vec<f64>) -> Option<f64> {
+    let (_, _, q3) = descriptive::quartiles(&values)?;
+    Some(q3)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -237,6 +255,63 @@ mod tests {
             crate::statkit_stddev_sample(vec![1.0, 1.0, 3.0, 3.0]),
             Some(expected)
         );
+    }
+
+    #[pg_test]
+    fn test_statkit_q1_empty() {
+        assert_eq!(crate::statkit_q1(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_q2_empty() {
+        assert_eq!(crate::statkit_q2(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_q3_empty() {
+        assert_eq!(crate::statkit_q3(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_q1_one_element() {
+        assert_eq!(crate::statkit_q1(vec![5.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_q2_one_element() {
+        assert_eq!(crate::statkit_q2(vec![5.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_q3_one_element() {
+        assert_eq!(crate::statkit_q3(vec![5.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_quartiles_even() {
+        let values = vec![1.0, 2.0, 3.0, 4.0];
+
+        assert_eq!(crate::statkit_q1(values.clone()), Some(1.5));
+        assert_eq!(crate::statkit_q2(values.clone()), Some(2.5));
+        assert_eq!(crate::statkit_q3(values), Some(3.5));
+    }
+
+    #[pg_test]
+    fn test_statkit_quartiles_odd() {
+        let values = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+
+        assert_eq!(crate::statkit_q1(values.clone()), Some(1.5));
+        assert_eq!(crate::statkit_q2(values.clone()), Some(3.0));
+        assert_eq!(crate::statkit_q3(values), Some(4.5));
+    }
+
+    #[pg_test]
+    fn test_statkit_quartiles_nan() {
+        let values = vec![1.0, f64::NAN, 3.0];
+
+        assert_eq!(crate::statkit_q1(values.clone()), None);
+        assert_eq!(crate::statkit_q2(values.clone()), None);
+        assert_eq!(crate::statkit_q3(values), None);
     }
 }
 
