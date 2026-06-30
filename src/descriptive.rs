@@ -191,6 +191,24 @@ pub fn iqr(values: &[f64]) -> Option<f64> {
     Some(q3 - q1)
 }
 
+pub fn mad(values: &[f64]) -> Option<f64> {
+    if invalid_input(values) {
+        return None;
+    }
+
+    let median = median(values)?;
+
+    let mut absolute_deviations = Vec::with_capacity(values.len());
+
+    for &value in values.iter() {
+        absolute_deviations.push((value - median).abs());
+    }
+
+    absolute_deviations.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    median_of_sorted(&absolute_deviations)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -486,5 +504,40 @@ mod tests {
     #[test]
     fn iqr_returns_result_for_five_element_input() {
         assert_eq!(iqr(&[1.0, 2.0, 3.0, 4.0, 5.0]), Some(3.0));
+    }
+
+    #[test]
+    fn mad_returns_none_for_empty_input() {
+        assert_eq!(mad(&[]), None);
+    }
+
+    #[test]
+    fn mad_returns_zero_for_one_input() {
+        assert_eq!(mad(&[5.0]), Some(0.0));
+    }
+
+    #[test]
+    fn mad_returns_zero_for_same_elements() {
+        assert_eq!(mad(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn mad_returns_result_for_odd_input() {
+        assert_eq!(mad(&[1.0, 2.0, 3.0, 4.0, 100.0]), Some(1.0));
+    }
+
+    #[test]
+    fn mad_returns_result_for_even_input() {
+        assert_eq!(mad(&[1.0, 2.0, 3.0, 4.0]), Some(1.0));
+    }
+
+    #[test]
+    fn mad_returns_none_for_nan() {
+        assert_eq!(mad(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn mad_returns_none_for_infinity() {
+        assert_eq!(mad(&[1.0, f64::INFINITY, 3.0]), None);
     }
 }

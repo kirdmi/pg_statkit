@@ -81,6 +81,11 @@ fn statkit_iqr(values: Vec<f64>) -> Option<f64> {
     descriptive::iqr(&values)
 }
 
+#[pg_extern]
+fn statkit_mad(values: Vec<f64>) -> Option<f64> {
+    descriptive::mad(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -332,6 +337,24 @@ mod tests {
     #[pg_test]
     fn test_statkit_iqr_nan() {
         assert_eq!(crate::statkit_iqr(vec![1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_mad_empty() {
+        assert_eq!(crate::statkit_mad(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_mad_valid_input() {
+        assert_eq!(
+            crate::statkit_mad(vec![1.0, 2.0, 3.0, 4.0, 100.0]),
+            Some(1.0)
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_mad_nan() {
+        assert_eq!(crate::statkit_mad(vec![1.0, f64::NAN, 3.0]), None);
     }
 }
 
