@@ -86,6 +86,11 @@ fn statkit_mad(values: Vec<f64>) -> Option<f64> {
     descriptive::mad(&values)
 }
 
+#[pg_extern]
+fn statkit_percentile(values: Vec<f64>, p: f64) -> Option<f64> {
+    descriptive::percentile(&values, p)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {

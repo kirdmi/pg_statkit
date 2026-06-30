@@ -209,6 +209,37 @@ pub fn mad(values: &[f64]) -> Option<f64> {
     median_of_sorted(&absolute_deviations)
 }
 
+pub fn percentile(values: &[f64], p: f64) -> Option<f64> {
+    if invalid_input(values) {
+        return None;
+    }
+
+    if !p.is_finite() {
+        return None;
+    }
+
+    if p < 0.0 || p > 100.0 {
+        return None;
+    }
+
+    let mut sorted = values.to_vec();
+
+    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let n = sorted.len();
+    let position = (p / 100.0) * (n as f64 - 1.0);
+
+    let lower_index = position.floor() as usize;
+    let upper_index = position.ceil() as usize;
+
+    let weight = position - lower_index as f64;
+
+    let lower = sorted[lower_index];
+    let upper = sorted[upper_index];
+
+    Some(lower + weight * (upper - lower))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -539,5 +570,42 @@ mod tests {
     #[test]
     fn mad_returns_none_for_infinity() {
         assert_eq!(mad(&[1.0, f64::INFINITY, 3.0]), None);
+    }
+
+    #[test]
+    fn percentile_returns_none_for_empty_input() {
+        assert_eq!(percentile(&[], 50.0), None);
+    }
+
+    #[test]
+    fn percentile_returns_none_for_invalid_p() {
+        assert_eq!(percentile(&[1.0, 2.0, 3.0], -1.0), None);
+        assert_eq!(percentile(&[1.0, 2.0, 3.0], 101.0), None);
+        assert_eq!(percentile(&[1.0, 2.0, 3.0], f64::NAN), None);
+    }
+
+    #[test]
+    fn percentile_returns_none_for_non_finite_values() {
+        assert_eq!(percentile(&[1.0, f64::NAN, 3.0], 50.0), None);
+    }
+
+    #[test]
+    fn percentile_returns_min_for_zero_percentile() {
+        assert_eq!(percentile(&[1.0, 2.0, 3.0, 4.0, 5.0], 0.0), Some(1.0));
+    }
+
+    #[test]
+    fn percentile_returns_median_for_fifty_percentile() {
+        assert_eq!(percentile(&[1.0, 2.0, 3.0, 4.0, 5.0], 50.0), Some(3.0));
+    }
+
+    #[test]
+    fn percentile_returns_max_for_hundred_percentile() {
+        assert_eq!(percentile(&[1.0, 2.0, 3.0, 4.0, 5.0], 100.0), Some(5.0));
+    }
+
+    #[test]
+    fn percentile_interpolates_between_values() {
+        assert_eq!(percentile(&[10.0, 20.0], 25.0), Some(12.5));
     }
 }
