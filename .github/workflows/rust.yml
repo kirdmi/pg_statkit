@@ -20,16 +20,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            clang \
-            llvm \
-            libclang-dev \
-            libreadline-dev \
-            zlib1g-dev \
-            flex \
-            bison \
-            libxml2-dev \
-            libxslt-dev \
-            libssl-dev \
+            clang llvm libclang-dev \
+            libreadline-dev zlib1g-dev \
+            flex bison \
+            libxml2-dev libxslt-dev libssl-dev \
             pkg-config
 
       - name: Install cargo-pgrx
@@ -38,5 +32,5 @@ jobs:
       - name: Init pgrx
         run: cargo pgrx init --pg16 download
 
-      - name: Build
-        run: cargo build --verbose
+      - name: Test
+        run: cargo test --no-default-features --features pg16 --verbose
