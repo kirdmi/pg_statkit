@@ -1,5 +1,7 @@
 // helpers
 
+use core::option::Option;
+
 fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
     if invalid_input(values) {
         return None;
@@ -181,6 +183,12 @@ pub fn quartiles(values: &[f64]) -> Option<(f64, f64, f64)> {
     let q3 = median_of_sorted(upper)?;
 
     Some((q1, q2, q3))
+}
+
+pub fn iqr(values: &[f64]) -> Option<f64> {
+    let (q1, _, q3) = quartiles(values)?;
+
+    Some(q3 - q1)
 }
 
 #[cfg(test)]
@@ -458,5 +466,25 @@ mod tests {
     #[test]
     fn quartiles_returns_result_for_three_element_input_with_nan() {
         assert_eq!(quartiles(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn iqr_returns_result_for_two_element_input() {
+        assert_eq!(iqr(&[1.0, 2.0]), Some(1.0));
+    }
+
+    #[test]
+    fn iqr_returns_result_for_three_element_input() {
+        assert_eq!(iqr(&[1.0, 2.0, 3.0]), Some(2.0));
+    }
+
+    #[test]
+    fn iqr_returns_result_for_four_element_input() {
+        assert_eq!(iqr(&[1.0, 2.0, 3.0, 4.0]), Some(2.0));
+    }
+
+    #[test]
+    fn iqr_returns_result_for_five_element_input() {
+        assert_eq!(iqr(&[1.0, 2.0, 3.0, 4.0, 5.0]), Some(3.0));
     }
 }

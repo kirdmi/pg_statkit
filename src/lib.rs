@@ -76,6 +76,11 @@ fn statkit_q3(values: Vec<f64>) -> Option<f64> {
     Some(q3)
 }
 
+#[pg_extern]
+fn statkit_iqr(values: Vec<f64>) -> Option<f64> {
+    descriptive::iqr(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -312,6 +317,21 @@ mod tests {
         assert_eq!(crate::statkit_q1(values.clone()), None);
         assert_eq!(crate::statkit_q2(values.clone()), None);
         assert_eq!(crate::statkit_q3(values), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_iqr_empty() {
+        assert_eq!(crate::statkit_iqr(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_iqr_valid_input() {
+        assert_eq!(crate::statkit_iqr(vec![1.0, 2.0, 3.0, 4.0, 5.0]), Some(3.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_iqr_nan() {
+        assert_eq!(crate::statkit_iqr(vec![1.0, f64::NAN, 3.0]), None);
     }
 }
 
