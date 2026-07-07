@@ -264,6 +264,13 @@ pub fn cv_sample(values: &[f64]) -> Option<f64> {
     Some(stddev_sample(values)? / mean_value)
 }
 
+pub fn sem(values: &[f64]) -> Option<f64> {
+    let deviation = stddev_sample(values)?;
+    let n = values.len() as f64;
+
+    Some(deviation / n.sqrt())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -709,5 +716,31 @@ mod tests {
     fn cv_sample_returns_negative_cv_for_negative_mean() {
         let expected = (4.0_f64 / 3.0).sqrt() / -2.0;
         assert_option_float_close(cv_sample(&[-1.0, -1.0, -3.0, -3.0]), expected);
+    }
+
+    #[test]
+    fn sem_returns_none_for_empty_input() {
+        assert_eq!(sem(&[]), None);
+    }
+
+    #[test]
+    fn sem_returns_none_for_one_input() {
+        assert_eq!(sem(&[5.0]), None);
+    }
+
+    #[test]
+    fn sem_returns_none_for_nan() {
+        assert_eq!(sem(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn sem_returns_zero_for_same_elements() {
+        assert_eq!(sem(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn sem_returns_sem_for_known_values() {
+        let expected = (4.0_f64 / 3.0).sqrt() / (4.0_f64).sqrt();
+        assert_option_float_close(sem(&[1.0, 1.0, 3.0, 3.0]), expected);
     }
 }
