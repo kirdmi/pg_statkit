@@ -96,6 +96,11 @@ fn statkit_cv_population(values: Vec<f64>) -> Option<f64> {
     descriptive::cv_population(&values)
 }
 
+#[pg_extern]
+fn statkit_cv_sample(values: Vec<f64>) -> Option<f64> {
+    descriptive::cv_sample(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -396,6 +401,22 @@ mod tests {
     #[pg_test]
     fn test_statkit_cv_population_empty() {
         assert_eq!(crate::statkit_cv_population(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_sample() {
+        let expected = (4.0_f64 / 3.0).sqrt() / 2.0;
+        assert_option_float_close(crate::statkit_cv_sample(vec![1.0, 1.0, 3.0, 3.0]), expected);
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_sample_zero_mean() {
+        assert_eq!(crate::statkit_cv_sample(vec![-1.0, 1.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_sample_one_element() {
+        assert_eq!(crate::statkit_cv_sample(vec![5.0]), None);
     }
 }
 
