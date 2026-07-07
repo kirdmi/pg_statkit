@@ -1,4 +1,5 @@
 mod descriptive;
+mod effect_size;
 mod utils;
 use pgrx::prelude::*;
 
@@ -105,6 +106,11 @@ fn statkit_cv_sample(values: Vec<f64>) -> Option<f64> {
 #[pg_extern]
 fn statkit_sem(values: Vec<f64>) -> Option<f64> {
     descriptive::sem(&values)
+}
+
+#[pg_extern]
+fn statkit_risk_difference(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
+    effect_size::risk_difference(a, b, c, d)
 }
 
 #[cfg(any(test, feature = "pg_test"))]
@@ -439,6 +445,21 @@ mod tests {
     #[pg_test]
     fn test_statkit_sem_empty() {
         assert_eq!(crate::statkit_sem(vec![]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_difference() {
+        assert_option_float_close(crate::statkit_risk_difference(8, 2, 2, 8), 0.6);
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_difference_empty_group() {
+        assert_eq!(crate::statkit_risk_difference(0, 0, 3, 7), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_difference_negative_input() {
+        assert_eq!(crate::statkit_risk_difference(-1, 5, 3, 7), None);
     }
 }
 
