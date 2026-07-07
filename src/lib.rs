@@ -91,6 +91,11 @@ fn statkit_percentile(values: Vec<f64>, p: f64) -> Option<f64> {
     descriptive::percentile(&values, p)
 }
 
+#[pg_extern]
+fn statkit_cv_population(values: Vec<f64>) -> Option<f64> {
+    descriptive::cv_population(&values)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -373,6 +378,24 @@ mod tests {
     #[pg_test]
     fn test_statkit_mad_nan() {
         assert_eq!(crate::statkit_mad(vec![1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_population() {
+        assert_eq!(
+            crate::statkit_cv_population(vec![1.0, 1.0, 3.0, 3.0]),
+            Some(0.5)
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_population_zero_mean() {
+        assert_eq!(crate::statkit_cv_population(vec![-1.0, 1.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_cv_population_empty() {
+        assert_eq!(crate::statkit_cv_population(vec![]), None);
     }
 }
 

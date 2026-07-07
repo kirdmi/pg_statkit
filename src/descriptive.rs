@@ -1,5 +1,7 @@
 // helpers
 
+use core::option::Option;
+
 fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
     if invalid_input(values) {
         return None;
@@ -240,6 +242,16 @@ pub fn percentile(values: &[f64], p: f64) -> Option<f64> {
     let upper = sorted[upper_index];
 
     Some(lower + weight * (upper - lower))
+}
+
+pub fn cv_population(values: &[f64]) -> Option<f64> {
+    let mean_value = mean(values)?;
+
+    if mean_value == 0.0 {
+        return None;
+    }
+
+    Some(stddev_population(values)? / mean_value)
 }
 
 #[cfg(test)]
@@ -609,5 +621,46 @@ mod tests {
     #[test]
     fn percentile_interpolates_between_values() {
         assert_eq!(percentile(&[10.0, 20.0], 25.0), Some(12.5));
+    }
+
+    #[test]
+    fn cv_population_returns_none_for_empty_input() {
+        assert_eq!(cv_population(&[]), None);
+    }
+
+    #[test]
+    fn cv_population_returns_none_for_nan() {
+        assert_eq!(cv_population(&[1.0, f64::NAN, 3.0]), None);
+    }
+
+    #[test]
+    fn cv_population_returns_none_for_zero_mean() {
+        assert_eq!(cv_population(&[-1.0, 1.0]), None);
+    }
+
+    #[test]
+    fn cv_population_returns_zero_for_one_input() {
+        assert_eq!(cv_population(&[5.0]), Some(0.0));
+    }
+
+    #[test]
+    fn cv_population_returns_zero_for_same_elements() {
+        assert_eq!(cv_population(&[10.0, 10.0, 10.0]), Some(0.0));
+    }
+
+    #[test]
+    fn cv_population_returns_cv_for_positive_mean() {
+        assert_eq!(cv_population(&[1.0, 1.0, 3.0, 3.0]), Some(0.5));
+    }
+
+    #[test]
+    fn cv_population_returns_negative_cv_for_negative_mean() {
+        assert_eq!(cv_population(&[-1.0, -1.0, -3.0, -3.0]), Some(-0.5));
+    }
+
+    #[test]
+    fn cv_population_returns_fractional_cv() {
+        let expected = (2.0_f64 / 3.0).sqrt() / 2.0;
+        assert_option_float_close(cv_population(&[1.0, 2.0, 3.0]), expected);
     }
 }
