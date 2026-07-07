@@ -1,4 +1,5 @@
 mod descriptive;
+mod utils;
 use pgrx::prelude::*;
 
 ::pgrx::pg_module_magic!(name, version);
