@@ -113,6 +113,11 @@ fn statkit_risk_difference(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
     effect_size::risk_difference(a, b, c, d)
 }
 
+#[pg_extern]
+fn statkit_risk_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
+    effect_size::risk_ratio(a, b, c, d)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -460,6 +465,21 @@ mod tests {
     #[pg_test]
     fn test_statkit_risk_difference_negative_input() {
         assert_eq!(crate::statkit_risk_difference(-1, 5, 3, 7), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_ratio() {
+        assert_eq!(crate::statkit_risk_ratio(6, 4, 3, 7), Some(2.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_ratio_zero_risk_in_control() {
+        assert_eq!(crate::statkit_risk_ratio(5, 5, 0, 10), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_risk_ratio_empty_group() {
+        assert_eq!(crate::statkit_risk_ratio(0, 0, 3, 7), None);
     }
 }
 
