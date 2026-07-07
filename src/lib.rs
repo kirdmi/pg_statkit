@@ -96,6 +96,19 @@ fn statkit_percentile(values: Vec<f64>, p: f64) -> Option<f64> {
 mod tests {
     use super::*;
 
+    fn assert_option_float_close(actual: Option<f64>, expected: f64) {
+        let epsilon = 1e-10;
+        let actual = actual.expect("expected Some(f64), got None");
+
+        assert!(
+            (actual - expected).abs() < epsilon,
+            "actual: {}, expected: {}, diff: {}",
+            actual,
+            expected,
+            (actual - expected).abs()
+        );
+    }
+
     #[pg_test]
     fn test_statkit_version() {
         assert_eq!(crate::statkit_version(), env!("CARGO_PKG_VERSION"));
@@ -266,9 +279,9 @@ mod tests {
     fn test_statkit_stddev_sample_returns_stddev_for_different_elements() {
         let expected = (4.0_f64 / 3.0).sqrt();
 
-        assert_eq!(
+        assert_option_float_close(
             crate::statkit_stddev_sample(vec![1.0, 1.0, 3.0, 3.0]),
-            Some(expected)
+            expected,
         );
     }
 

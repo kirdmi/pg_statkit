@@ -1,7 +1,5 @@
 // helpers
 
-use core::option::Option;
-
 fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
     if invalid_input(values) {
         return None;
@@ -127,6 +125,10 @@ pub fn median(values: &[f64]) -> Option<f64> {
 }
 
 pub fn variance_population(values: &[f64]) -> Option<f64> {
+    if invalid_input(values) {
+        return None;
+    }
+
     let len: f64 = values.len() as f64;
     let ssd = sum_squared_deviations(values)?;
 
