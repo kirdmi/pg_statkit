@@ -1,4 +1,4 @@
-use crate::descriptive::{mean, variance_sample};
+use crate::descriptive::{mean, stddev_sample, variance_sample};
 use crate::utils::invalid_sample_input;
 
 pub fn risk_difference(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
@@ -87,6 +87,22 @@ pub fn hedges_g(group_1: &[f64], group_2: &[f64]) -> Option<f64> {
     let j_value = 1.0 - (3.0 / (4.0 * (group_1_len + group_2_len) - 9.0));
 
     Some(cohens_d_value * j_value)
+}
+
+pub fn glass_delta(treatment: &[f64], control: &[f64]) -> Option<f64> {
+    if invalid_sample_input(treatment) || invalid_sample_input(control) {
+        return None;
+    }
+
+    let mean_treatment = mean(treatment)?;
+    let mean_control = mean(control)?;
+
+    let sd_control = stddev_sample(control)?;
+    if sd_control == 0.0 {
+        return None;
+    }
+
+    Some((mean_treatment - mean_control) / sd_control)
 }
 
 #[cfg(test)]
@@ -319,5 +335,58 @@ mod tests {
     fn hedges_g_returns_negative_when_group_one_lower() {
         let expected = -2.0 * 0.8;
         assert_option_float_close(hedges_g(&[1.0, 2.0, 3.0], &[3.0, 4.0, 5.0]), expected);
+    }
+
+    #[test]
+    fn glass_delta_returns_none_for_empty_treatment() {
+        assert_eq!(glass_delta(&[], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn glass_delta_returns_none_for_empty_control() {
+        assert_eq!(glass_delta(&[1.0, 2.0, 3.0], &[]), None);
+    }
+
+    #[test]
+    fn glass_delta_returns_none_for_one_element_group() {
+        assert_eq!(glass_delta(&[5.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn glass_delta_returns_none_for_nan() {
+        assert_eq!(glass_delta(&[1.0, f64::NAN, 3.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn glass_delta_returns_none_for_zero_variance_control() {
+        assert_eq!(glass_delta(&[1.0, 2.0, 3.0], &[5.0, 5.0, 5.0]), None);
+    }
+
+    #[test]
+    fn glass_delta_works_when_treatment_zero_variance() {
+        let result = glass_delta(&[5.0, 5.0, 5.0], &[1.0, 2.0, 3.0]);
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn glass_delta_returns_zero_for_equal_means() {
+        assert_eq!(glass_delta(&[1.0, 2.0, 3.0], &[1.0, 2.0, 3.0]), Some(0.0));
+    }
+
+    #[test]
+    fn glass_delta_returns_positive_when_treatment_higher() {
+        assert_option_float_close(glass_delta(&[3.0, 4.0, 5.0], &[1.0, 2.0, 3.0]), 2.0);
+    }
+
+    #[test]
+    fn glass_delta_returns_negative_when_treatment_lower() {
+        assert_option_float_close(glass_delta(&[1.0, 2.0, 3.0], &[3.0, 4.0, 5.0]), -2.0);
+    }
+
+    #[test]
+    fn glass_delta_is_order_sensitive() {
+        let ab = glass_delta(&[3.0, 4.0, 5.0], &[10.0, 20.0, 60.0]);
+        let ba = glass_delta(&[10.0, 20.0, 60.0], &[3.0, 4.0, 5.0]);
+        assert_ne!(ab, ba);
     }
 }

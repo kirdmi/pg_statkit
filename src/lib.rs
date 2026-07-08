@@ -133,6 +133,11 @@ fn statkit_hedges_g(group_1: Vec<f64>, group_2: Vec<f64>) -> Option<f64> {
     effect_size::hedges_g(&group_1, &group_2)
 }
 
+#[pg_extern]
+fn statkit_glass_delta(treatment: Vec<f64>, control: Vec<f64>) -> Option<f64> {
+    effect_size::glass_delta(&treatment, &control)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -554,6 +559,30 @@ mod tests {
     #[pg_test]
     fn test_statkit_hedges_g_empty_group() {
         assert_eq!(crate::statkit_hedges_g(vec![], vec![1.0, 2.0, 3.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_glass_delta() {
+        assert_option_float_close(
+            crate::statkit_glass_delta(vec![3.0, 4.0, 5.0], vec![1.0, 2.0, 3.0]),
+            2.0,
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_glass_delta_zero_variance_control() {
+        assert_eq!(
+            crate::statkit_glass_delta(vec![1.0, 2.0, 3.0], vec![5.0, 5.0, 5.0]),
+            None
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_glass_delta_empty_group() {
+        assert_eq!(
+            crate::statkit_glass_delta(vec![], vec![1.0, 2.0, 3.0]),
+            None
+        );
     }
 }
 
