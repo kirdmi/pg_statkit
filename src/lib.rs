@@ -138,6 +138,33 @@ fn statkit_glass_delta(treatment: Vec<f64>, control: Vec<f64>) -> Option<f64> {
     effect_size::glass_delta(&treatment, &control)
 }
 
+extension_sql!(
+    r#"
+COMMENT ON FUNCTION statkit_odds_ratio(bigint, bigint, bigint, bigint) IS
+  'Odds ratio for a 2x2 contingency table (a, b, c, d row-major). Applies the Haldane-Anscombe correction (adds 0.5 to all cells) when any cell is zero, so the result is then a corrected estimate rather than the raw odds ratio.';
+
+COMMENT ON FUNCTION statkit_glass_delta(double precision[], double precision[]) IS
+  'Glass''s delta: standardized mean difference using the control group''s standard deviation as the denominator. Argument order is significant (treatment, control).';
+
+COMMENT ON FUNCTION statkit_cv_population(double precision[]) IS
+  'Population coefficient of variation, returned as a ratio (not a percentage). Undefined when the mean is zero.';
+
+COMMENT ON FUNCTION statkit_cv_sample(double precision[]) IS
+  'Sample coefficient of variation, returned as a ratio (not a percentage). Undefined when the mean is zero.';
+
+COMMENT ON FUNCTION statkit_sem(double precision[]) IS
+  'Standard error of the mean (not the standard deviation): estimates how precisely the mean is determined, and decreases as sample size grows.';
+"#,
+    name = "statkit_comments",
+    requires = [
+        statkit_odds_ratio,
+        statkit_glass_delta,
+        statkit_cv_population,
+        statkit_cv_sample,
+        statkit_sem,
+    ],
+);
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
