@@ -1,5 +1,7 @@
 # pg_statkit
 
+![CI](https://github.com/kirdmi/pg_statkit/actions/workflows/rust.yml/badge.svg)
+
 A PostgreSQL statistical toolkit for clinical, health, and biomedical data analysis, written in Rust.
 
 Native descriptive statistics and effect sizes inside PostgreSQL, with a focus on the measures used in clinical research and epidemiology. Built with [pgrx](https://github.com/pgcentralfoundation/pgrx).
