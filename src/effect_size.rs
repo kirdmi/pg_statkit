@@ -38,6 +38,23 @@ pub fn risk_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
     Some(risk_1 / risk_2)
 }
 
+pub fn odds_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
+    if [a, b, c, d].iter().any(|&x| x < 0) {
+        return None;
+    }
+
+    let correction = if [a, b, c, d].iter().any(|&x| x == 0) {
+        0.5
+    } else {
+        0.0
+    };
+
+    let odds_ratio_value = ((a as f64 + correction) * (d as f64 + correction))
+        / ((b as f64 + correction) * (c as f64 + correction));
+
+    Some(odds_ratio_value)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -140,5 +157,43 @@ mod tests {
     fn risk_ratio_returns_fractional_result() {
         let expected = (1.0 / 3.0) / 0.5;
         assert_option_float_close(risk_ratio(1, 2, 1, 1), expected);
+    }
+
+    #[test]
+    fn odds_ratio_returns_none_for_negative_input() {
+        assert_eq!(odds_ratio(-1, 5, 3, 7), None);
+    }
+
+    #[test]
+    fn odds_ratio_returns_one_for_equal_odds() {
+        assert_eq!(odds_ratio(5, 5, 5, 5), Some(1.0));
+    }
+
+    #[test]
+    fn odds_ratio_returns_raw_or_without_zeros() {
+        assert_option_float_close(odds_ratio(4, 6, 2, 8), 8.0 / 3.0);
+    }
+
+    #[test]
+    fn odds_ratio_greater_than_one_for_higher_odds() {
+        assert_eq!(odds_ratio(8, 2, 2, 8), Some(16.0));
+    }
+
+    #[test]
+    fn odds_ratio_applies_haldane_for_zero_cell() {
+        let expected = (0.5 * 5.5) / (10.5 * 5.5);
+        assert_option_float_close(odds_ratio(0, 10, 5, 5), expected);
+    }
+
+    #[test]
+    fn odds_ratio_haldane_does_not_return_zero_for_zero_numerator() {
+        let result = odds_ratio(0, 10, 5, 5).unwrap();
+        assert!(result > 0.0);
+    }
+
+    #[test]
+    fn odds_ratio_applies_haldane_for_zero_in_denominator_cell() {
+        let expected = (5.5 * 5.5) / (0.5 * 5.5);
+        assert_option_float_close(odds_ratio(5, 0, 5, 5), expected);
     }
 }

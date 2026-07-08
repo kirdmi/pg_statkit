@@ -118,6 +118,11 @@ fn statkit_risk_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
     effect_size::risk_ratio(a, b, c, d)
 }
 
+#[pg_extern]
+fn statkit_odds_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
+    effect_size::odds_ratio(a, b, c, d)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -480,6 +485,22 @@ mod tests {
     #[pg_test]
     fn test_statkit_risk_ratio_empty_group() {
         assert_eq!(crate::statkit_risk_ratio(0, 0, 3, 7), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_odds_ratio() {
+        assert_eq!(crate::statkit_odds_ratio(8, 2, 2, 8), Some(16.0));
+    }
+
+    #[pg_test]
+    fn test_statkit_odds_ratio_haldane_for_zero_cell() {
+        let expected = (0.5 * 5.5) / (10.5 * 5.5);
+        assert_option_float_close(crate::statkit_odds_ratio(0, 10, 5, 5), expected);
+    }
+
+    #[pg_test]
+    fn test_statkit_odds_ratio_negative_input() {
+        assert_eq!(crate::statkit_odds_ratio(-1, 5, 3, 7), None);
     }
 }
 
