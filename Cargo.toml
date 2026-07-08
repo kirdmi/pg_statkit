@@ -2,6 +2,11 @@
 name = "pg_statkit"
 version = "0.0.0"
 edition = "2024"
+license = "MIT"
+description = "A PostgreSQL statistical toolkit for clinical, health, and biomedical data analysis"
+repository = "https://github.com/kirdmi/pg_statkit"
+readme = "README.md"
+keywords = ["statistics", "clinical", "effect-size", "biostatistics", "pgrx"]
 
 [lib]
 crate-type = ["cdylib"]
