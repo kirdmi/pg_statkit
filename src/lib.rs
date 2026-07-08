@@ -128,6 +128,11 @@ fn statkit_cohens_d(group_1: Vec<f64>, group_2: Vec<f64>) -> Option<f64> {
     effect_size::cohens_d(&group_1, &group_2)
 }
 
+#[pg_extern]
+fn statkit_hedges_g(group_1: Vec<f64>, group_2: Vec<f64>) -> Option<f64> {
+    effect_size::hedges_g(&group_1, &group_2)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -527,6 +532,28 @@ mod tests {
     #[pg_test]
     fn test_statkit_cohens_d_empty_group() {
         assert_eq!(crate::statkit_cohens_d(vec![], vec![1.0, 2.0, 3.0]), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_hedges_g() {
+        let expected = 2.0 * 0.8;
+        assert_option_float_close(
+            crate::statkit_hedges_g(vec![3.0, 4.0, 5.0], vec![1.0, 2.0, 3.0]),
+            expected,
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_hedges_g_both_zero_variance() {
+        assert_eq!(
+            crate::statkit_hedges_g(vec![5.0, 5.0, 5.0], vec![8.0, 8.0, 8.0]),
+            None
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_hedges_g_empty_group() {
+        assert_eq!(crate::statkit_hedges_g(vec![], vec![1.0, 2.0, 3.0]), None);
     }
 }
 

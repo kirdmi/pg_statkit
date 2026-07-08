@@ -80,6 +80,15 @@ pub fn cohens_d(group_1: &[f64], group_2: &[f64]) -> Option<f64> {
     Some((mean_1 - mean_2) / pooled_sd)
 }
 
+pub fn hedges_g(group_1: &[f64], group_2: &[f64]) -> Option<f64> {
+    let cohens_d_value = cohens_d(group_1, group_2)?;
+    let group_1_len = group_1.len() as f64;
+    let group_2_len = group_2.len() as f64;
+    let j_value = 1.0 - (3.0 / (4.0 * (group_1_len + group_2_len) - 9.0));
+
+    Some(cohens_d_value * j_value)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -266,5 +275,49 @@ mod tests {
     fn cohens_d_works_when_one_group_zero_variance() {
         let result = cohens_d(&[5.0, 5.0, 5.0], &[1.0, 2.0, 3.0]);
         assert!(result.is_some());
+    }
+
+    #[test]
+    fn hedges_g_returns_none_for_empty_group() {
+        assert_eq!(hedges_g(&[], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn hedges_g_returns_none_for_one_element_group() {
+        assert_eq!(hedges_g(&[5.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn hedges_g_returns_none_for_nan() {
+        assert_eq!(hedges_g(&[1.0, f64::NAN, 3.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn hedges_g_returns_none_for_both_groups_zero_variance() {
+        assert_eq!(hedges_g(&[5.0, 5.0, 5.0], &[8.0, 8.0, 8.0]), None);
+    }
+
+    #[test]
+    fn hedges_g_returns_zero_for_equal_means() {
+        assert_eq!(hedges_g(&[1.0, 2.0, 3.0], &[1.0, 2.0, 3.0]), Some(0.0));
+    }
+
+    #[test]
+    fn hedges_g_applies_correction_factor() {
+        let expected = 2.0 * 0.8;
+        assert_option_float_close(hedges_g(&[3.0, 4.0, 5.0], &[1.0, 2.0, 3.0]), expected);
+    }
+
+    #[test]
+    fn hedges_g_is_smaller_than_cohens_d() {
+        let d = cohens_d(&[3.0, 4.0, 5.0], &[1.0, 2.0, 3.0]).unwrap();
+        let g = hedges_g(&[3.0, 4.0, 5.0], &[1.0, 2.0, 3.0]).unwrap();
+        assert!(g.abs() < d.abs());
+    }
+
+    #[test]
+    fn hedges_g_returns_negative_when_group_one_lower() {
+        let expected = -2.0 * 0.8;
+        assert_option_float_close(hedges_g(&[1.0, 2.0, 3.0], &[3.0, 4.0, 5.0]), expected);
     }
 }
