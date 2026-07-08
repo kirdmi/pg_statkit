@@ -1,6 +1,6 @@
 [package]
 name = "pg_statkit"
-version = "0.0.0"
+version = "1.0.0"
 edition = "2024"
 license = "MIT"
 description = "A PostgreSQL statistical toolkit for clinical, health, and biomedical data analysis"
