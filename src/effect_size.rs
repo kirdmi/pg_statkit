@@ -1,3 +1,6 @@
+use crate::descriptive::{mean, variance_sample};
+use crate::utils::invalid_sample_input;
+
 pub fn risk_difference(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
     if [a, b, c, d].iter().any(|&x| x < 0) {
         return None;
@@ -53,6 +56,28 @@ pub fn odds_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
         / ((b as f64 + correction) * (c as f64 + correction));
 
     Some(odds_ratio_value)
+}
+
+pub fn cohens_d(group_1: &[f64], group_2: &[f64]) -> Option<f64> {
+    if invalid_sample_input(group_1) || invalid_sample_input(group_2) {
+        return None;
+    }
+
+    let mean_1 = mean(group_1)?;
+    let mean_2 = mean(group_2)?;
+    let variance_sample_1 = variance_sample(group_1)?;
+    let variance_sample_2 = variance_sample(group_2)?;
+    let group_1_len = group_1.len() as f64;
+    let group_2_len = group_2.len() as f64;
+    let pooled_variance = ((group_1_len - 1.0) * variance_sample_1
+        + (group_2_len - 1.0) * variance_sample_2)
+        / (group_1_len + group_2_len - 2.0);
+    let pooled_sd = pooled_variance.sqrt();
+    if pooled_sd == 0.0 {
+        return None;
+    }
+
+    Some((mean_1 - mean_2) / pooled_sd)
 }
 
 #[cfg(test)]
@@ -195,5 +220,51 @@ mod tests {
     fn odds_ratio_applies_haldane_for_zero_in_denominator_cell() {
         let expected = (5.5 * 5.5) / (0.5 * 5.5);
         assert_option_float_close(odds_ratio(5, 0, 5, 5), expected);
+    }
+
+    #[test]
+    fn cohens_d_returns_none_for_empty_group_one() {
+        assert_eq!(cohens_d(&[], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn cohens_d_returns_none_for_empty_group_two() {
+        assert_eq!(cohens_d(&[1.0, 2.0, 3.0], &[]), None);
+    }
+
+    #[test]
+    fn cohens_d_returns_none_for_one_element_group() {
+        assert_eq!(cohens_d(&[5.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn cohens_d_returns_none_for_nan() {
+        assert_eq!(cohens_d(&[1.0, f64::NAN, 3.0], &[1.0, 2.0, 3.0]), None);
+    }
+
+    #[test]
+    fn cohens_d_returns_none_for_both_groups_zero_variance() {
+        assert_eq!(cohens_d(&[5.0, 5.0, 5.0], &[8.0, 8.0, 8.0]), None);
+    }
+
+    #[test]
+    fn cohens_d_returns_zero_for_equal_means() {
+        assert_eq!(cohens_d(&[1.0, 2.0, 3.0], &[1.0, 2.0, 3.0]), Some(0.0));
+    }
+
+    #[test]
+    fn cohens_d_returns_positive_when_group_one_higher() {
+        assert_option_float_close(cohens_d(&[3.0, 4.0, 5.0], &[1.0, 2.0, 3.0]), 2.0);
+    }
+
+    #[test]
+    fn cohens_d_returns_negative_when_group_one_lower() {
+        assert_option_float_close(cohens_d(&[1.0, 2.0, 3.0], &[3.0, 4.0, 5.0]), -2.0);
+    }
+
+    #[test]
+    fn cohens_d_works_when_one_group_zero_variance() {
+        let result = cohens_d(&[5.0, 5.0, 5.0], &[1.0, 2.0, 3.0]);
+        assert!(result.is_some());
     }
 }

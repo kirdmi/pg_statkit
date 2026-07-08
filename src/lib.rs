@@ -123,6 +123,11 @@ fn statkit_odds_ratio(a: i64, b: i64, c: i64, d: i64) -> Option<f64> {
     effect_size::odds_ratio(a, b, c, d)
 }
 
+#[pg_extern]
+fn statkit_cohens_d(group_1: Vec<f64>, group_2: Vec<f64>) -> Option<f64> {
+    effect_size::cohens_d(&group_1, &group_2)
+}
+
 #[cfg(any(test, feature = "pg_test"))]
 #[pg_schema]
 mod tests {
@@ -501,6 +506,27 @@ mod tests {
     #[pg_test]
     fn test_statkit_odds_ratio_negative_input() {
         assert_eq!(crate::statkit_odds_ratio(-1, 5, 3, 7), None);
+    }
+
+    #[pg_test]
+    fn test_statkit_cohens_d() {
+        assert_option_float_close(
+            crate::statkit_cohens_d(vec![3.0, 4.0, 5.0], vec![1.0, 2.0, 3.0]),
+            2.0,
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_cohens_d_both_zero_variance() {
+        assert_eq!(
+            crate::statkit_cohens_d(vec![5.0, 5.0, 5.0], vec![8.0, 8.0, 8.0]),
+            None
+        );
+    }
+
+    #[pg_test]
+    fn test_statkit_cohens_d_empty_group() {
+        assert_eq!(crate::statkit_cohens_d(vec![], vec![1.0, 2.0, 3.0]), None);
     }
 }
 
