@@ -1,6 +1,7 @@
 # pg_statkit
 
 ![CI](https://github.com/kirdmi/pg_statkit/actions/workflows/rust.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
 A PostgreSQL statistical toolkit for clinical, health, and biomedical data analysis, written in Rust.
 
