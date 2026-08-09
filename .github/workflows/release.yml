@@ -1,0 +1,47 @@
+name: Release
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pg: [pg13, pg14, pg15, pg16, pg17]
+    env:
+      PGRX_HOME: /home/runner/.pgrx
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang llvm libclang-dev \
+            libreadline-dev zlib1g-dev \
+            flex bison \
+            libxml2-dev libxslt-dev libssl-dev \
+            libicu-dev \
+            pkg-config
+      - name: Install cargo-pgrx
+        run: cargo install cargo-pgrx --version 0.18.1 --locked
+      - name: Init pgrx
+        run: cargo pgrx init --${{ matrix.pg }} download
+      - name: Package
+        run: cargo pgrx package --features ${{ matrix.pg }}
+      - name: Assemble flat archive
+        run: |
+          mkdir staging
+          find target/release/pg_statkit-${{ matrix.pg }} -type f \
+            \( -name '*.so' -o -name '*.control' -o -name '*.sql' \) \
+            -exec cp {} staging/ \;
+          ls -la staging
+          tar czf pg_statkit-${{ matrix.pg }}-linux-x86_64.tar.gz -C staging .
+      - name: Attach to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: pg_statkit-${{ matrix.pg }}-linux-x86_64.tar.gz
+          asset_name: pg_statkit-${{ matrix.pg }}-linux-x86_64.tar.gz
+          tag: ${{ github.ref }}
