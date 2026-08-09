@@ -13,7 +13,7 @@ PostgreSQL ships with basic descriptive statistics (`avg`, `stddev`, `percentile
 
 `pg_statkit` provides these directly in SQL, for workflows where the data already lives in PostgreSQL and you'd rather not move it out for a single statistic. For full statistical analysis with confidence intervals and assumption checks, mature tools like R's [`effectsize`](https://easystats.github.io/effectsize/) remain the right choice. This extension covers the common case of computing a measure in place.
 
-## Features (v1.0)
+## Features
 
 **Descriptive statistics**
 - Central tendency: mean, median, sum
@@ -33,14 +33,28 @@ PostgreSQL ships with basic descriptive statistics (`avg`, `stddev`, `percentile
 
 ## Installation
 
-Requires [Rust](https://www.rust-lang.org/tools/install) and [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx). Supports PostgreSQL 13–16.
+Supports PostgreSQL 13 to 17.
+
+### Prebuilt binaries (Linux x86_64)
+
+Download the archive for your PostgreSQL version from the [latest release](https://github.com/kirdmi/pg_statkit/releases/latest), then copy the files into the directories reported by `pg_config`:
+
+```sh
+tar xzf pg_statkit-pg16-linux-x86_64.tar.gz
+cp pg_statkit.so "$(pg_config --pkglibdir)/"
+cp pg_statkit*.sql pg_statkit.control "$(pg_config --sharedir)/extension/"
+```
+
+### From source
+
+Requires [Rust](https://www.rust-lang.org/tools/install) and [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx).
 
 ```sh
 cargo install --locked cargo-pgrx --version 0.18.1
 cargo pgrx install
 ```
 
-Then enable the extension in your database:
+### Enable the extension
 
 ```sql
 CREATE EXTENSION pg_statkit;
