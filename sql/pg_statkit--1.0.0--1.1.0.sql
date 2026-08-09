@@ -1,0 +1,4 @@
+-- pg_statkit 1.0.0 -> 1.1.0
+-- No schema changes. This release replaces the internal variance
+-- implementation with a single-pass Welford accumulator; all SQL
+-- function signatures and behaviour are unchanged.

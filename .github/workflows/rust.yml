@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pg: [pg13, pg14, pg15, pg16]
+        pg: [pg13, pg14, pg15, pg16, pg17]
     env:
       PGRX_HOME: /home/runner/.pgrx
     steps:
@@ -22,6 +22,7 @@ jobs:
             libreadline-dev zlib1g-dev \
             flex bison \
             libxml2-dev libxslt-dev libssl-dev \
+            libicu-dev \
             pkg-config
       - name: Install cargo-pgrx
         run: cargo install cargo-pgrx --version 0.18.1 --locked

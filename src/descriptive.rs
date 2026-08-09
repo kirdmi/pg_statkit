@@ -1,23 +1,6 @@
 // helpers
 
-use crate::utils::{invalid_input, invalid_sample_input, median_of_sorted};
-
-fn sum_squared_deviations(values: &[f64]) -> Option<f64> {
-    if invalid_input(values) {
-        return None;
-    }
-
-    let mean_value = mean(values)?;
-
-    let mut sum_squared_deviations: f64 = 0.0;
-
-    for &value in values.iter() {
-        let deviation: f64 = value - mean_value;
-        sum_squared_deviations += deviation * deviation;
-    }
-
-    Some(sum_squared_deviations)
-}
+use crate::utils::{WelfordAccumulator, invalid_input, invalid_sample_input, median_of_sorted};
 
 // API
 
@@ -99,10 +82,13 @@ pub fn variance_population(values: &[f64]) -> Option<f64> {
         return None;
     }
 
-    let len: f64 = values.len() as f64;
-    let ssd = sum_squared_deviations(values)?;
+    let mut acc = WelfordAccumulator::new();
 
-    Some(ssd / len)
+    for value in values {
+        acc.push(*value);
+    }
+
+    Some(acc.variance_population())
 }
 
 pub fn variance_sample(values: &[f64]) -> Option<f64> {
@@ -110,11 +96,13 @@ pub fn variance_sample(values: &[f64]) -> Option<f64> {
         return None;
     }
 
-    let len: f64 = values.len() as f64;
+    let mut acc = WelfordAccumulator::new();
 
-    let ssd = sum_squared_deviations(values)?;
+    for value in values {
+        acc.push(*value);
+    }
 
-    Some(ssd / (len - 1.0))
+    Some(acc.variance_sample())
 }
 
 pub fn stddev_population(values: &[f64]) -> Option<f64> {

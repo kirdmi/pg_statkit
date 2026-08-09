@@ -1,6 +1,6 @@
 [package]
 name = "pg_statkit"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 license = "MIT"
 description = "A PostgreSQL statistical toolkit for clinical, health, and biomedical data analysis"
@@ -17,6 +17,7 @@ pg13 = ["pgrx/pg13", "pgrx-tests/pg13" ]
 pg14 = ["pgrx/pg14", "pgrx-tests/pg14" ]
 pg15 = ["pgrx/pg15", "pgrx-tests/pg15" ]
 pg16 = ["pgrx/pg16", "pgrx-tests/pg16" ]
+pg17 = ["pgrx/pg17", "pgrx-tests/pg17"]
 pg_test = []
 pg_bench = ["dep:pgrx-bench"]
 
