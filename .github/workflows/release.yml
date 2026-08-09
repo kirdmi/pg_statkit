@@ -29,7 +29,11 @@ jobs:
       - name: Init pgrx
         run: cargo pgrx init --${{ matrix.pg }} download
       - name: Package
-        run: cargo pgrx package --no-default-features --features ${{ matrix.pg }}
+        run: |
+          PG_CONFIG=$(find $PGRX_HOME -path "*pgrx-install/bin/pg_config" | sort -V | tail -1)
+          echo "Found pg_config: $PG_CONFIG"
+          "$PG_CONFIG" --version
+          cargo pgrx package --no-default-features --features ${{ matrix.pg }} --pg-config "$PG_CONFIG"
       - name: Assemble flat archive
         run: |
           mkdir staging
