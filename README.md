@@ -33,7 +33,7 @@ PostgreSQL ships with basic descriptive statistics (`avg`, `stddev`, `percentile
 
 ## Installation
 
-Supports PostgreSQL 13 to 17.
+Supports PostgreSQL 15 through 19.
 
 ### Prebuilt binaries (Linux x86_64)
 
@@ -50,7 +50,7 @@ cp pg_statkit*.sql pg_statkit.control "$(pg_config --sharedir)/extension/"
 Requires [Rust](https://www.rust-lang.org/tools/install) and [cargo-pgrx](https://github.com/pgcentralfoundation/pgrx).
 
 ```sh
-cargo install --locked cargo-pgrx --version 0.18.1
+cargo install --locked cargo-pgrx --version 0.20.1
 cargo pgrx install
 ```
 
